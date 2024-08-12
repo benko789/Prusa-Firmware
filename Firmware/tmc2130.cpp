@@ -407,6 +407,18 @@ bool tmc2130_update_sg()
 	{
 		uint32_t val32 = 0;
 		tmc2130_rd(tmc2130_sg_measure, TMC2130_REG_DRV_STATUS, &val32);
+
+		// custom code to write StallGuard2 Values to Serial @TODO: not sure how bad this would be as it writes a lot of times
+		SERIAL_PROTOCOL("SG2 ");
+		if (tmc2130_sg_measure < E_AXIS){
+			SERIAL_PROTOCOL((char)('X' + tmc2130_sg_measure));	// for XYZ
+		}
+		else{
+			SERIAL_PROTOCOL((char)('E'));						// for E as not consecutive
+		}
+		SERIAL_PROTOCOL(":");
+		SERIAL_PROTOCOLLN(val32 & 0x3ff);	// instead of using the accumulated value, get the stall value only as we are not averagings
+
 		tmc2130_sg_measure_val += (val32 & 0x3ff);
 		tmc2130_sg_measure_cnt++;
 		return true;
